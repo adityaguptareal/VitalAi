@@ -36,8 +36,8 @@ const SymptomCheck = () => {
       const resultData = res.data;
       // console.log( resultData.result.parts[0].text);
 
-      // Redirect to /reports with result as state
-      navigate('/reports', { state: resultData.result.parts[0].text });
+      // Redirect to /report with result as state
+      navigate('/dashboard/reports', { state: resultData.result.parts[0].text });
 
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Something went wrong. Please try again.";
@@ -50,9 +50,9 @@ const SymptomCheck = () => {
 
   return (
     <section className="w-full bg-gradient-to-br from-blue-50 to-white px-6 py-8 flex items-center justify-center">
-      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-10 border border-teal-100">
+      <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-10 border border-blue-100">
         <h2 className="text-3xl font-bold text-gray-800 mb-3 text-center">
-          Welcome to <span className="text-teal-600">MediScan</span>
+          Welcome to <span className="text-blue-600">MediScan</span>
         </h2>
         <p className="text-center text-gray-600 mb-6">
           Upload your medical image and describe your symptoms to get instant AI-powered health insights.
@@ -68,12 +68,12 @@ const SymptomCheck = () => {
                   <img
                     src={URL.createObjectURL(imageFile[0])}
                     alt="Uploaded preview"
-                    className="rounded-xl w-full max-h-72 object-contain border border-teal-300"
+                    className="rounded-xl w-full max-h-72 object-contain border border-blue-300"
                   />
                 </div>
               ) : (
-                <div className="relative border-2 border-dashed border-teal-400 rounded-xl p-6 flex flex-col items-center justify-center bg-teal-50 hover:bg-teal-100 transition duration-200">
-                  <HiOutlineUpload className="text-4xl text-teal-600 mb-2" />
+                <div className="relative border-2 border-dashed border-blue-400 rounded-xl p-6 flex flex-col items-center justify-center bg-blue-50 hover:bg-blue-100 transition duration-200">
+                  <HiOutlineUpload className="text-4xl text-blue-600 mb-2" />
                   <p className="text-gray-600 text-sm">Click or drag & drop your image here</p>
                 </div>
               )}
@@ -97,7 +97,7 @@ const SymptomCheck = () => {
                 required: "Symptom description is required",
                 minLength: { value: 5, message: "Enter at least 5 characters" },
               })}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-teal-400 transition"
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
             />
             {errors.symptoms && <p className="text-red-600 text-sm mt-2">{errors.symptoms.message}</p>}
           </div>
@@ -105,7 +105,7 @@ const SymptomCheck = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-semibold shadow transition duration-200 disabled:opacity-50"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold shadow transition duration-200 disabled:opacity-50"
             disabled={loading}
           >
             {loading ? "Diagnosing..." : "Diagnose with MediScan"}

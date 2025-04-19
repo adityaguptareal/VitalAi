@@ -14,7 +14,7 @@ import UserDashboard from "./pages/UserDashboard";
 import HealthAnalyzer from "./pages/HealthAnalyzer";
 import WoundScanner from "./pages/WoundScanner";
 // import VoiceAssistant from "./pages/VoiceAssistant";
-// import ReportScanner from "./ReportScanner";
+import ReportScanner from "./pages/ReportScanner";
 import FindClinic from "./pages/FindClinic";
 import DoctorConnect from "./pages/DoctorConnect";
 import AiSosAssistant from "./pages/AiSosAssistant";
@@ -42,8 +42,9 @@ function App() {
         <Route index element={<UserDashboard />} />
           <Route path="symptoms" element={<HealthAnalyzer />} />
           <Route path="scan" element={<SymptomCheck />} />
-          <Route path="report" element={<Report />} />
+          <Route path="reports" element={<Report />} />
           <Route path="appointments" element={<FindClinic />} />
+          <Route path="reportScanner" element={<ReportScanner/>} />
           <Route path="help" element={<DoctorConnect />} />
           <Route path="sos" element={<AiSosAssistant />} />
           <Route path="contacts" element={<EmergencyContacts />} />
