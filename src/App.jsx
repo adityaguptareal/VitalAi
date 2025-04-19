@@ -13,12 +13,15 @@ import Login from "./pages/Login";
 import UserDashboard from "./pages/UserDashboard";
 import HealthAnalyzer from "./pages/HealthAnalyzer";
 import WoundScanner from "./pages/WoundScanner";
-import VoiceAssistant from "./pages/VoiceAssistant";
+// import VoiceAssistant from "./pages/VoiceAssistant";
+// import ReportScanner from "./ReportScanner";
 import FindClinic from "./pages/FindClinic";
 import DoctorConnect from "./pages/DoctorConnect";
 import AiSosAssistant from "./pages/AiSosAssistant";
 import EmergencyContacts from "./pages/EmergencyContacts";
 import AppointmentsList from "./pages/AppointmentsList";
+import Report from "./pages/Report";
+import SymptomCheck from "./components/Symptomcheck";
 
 
 function App() {
@@ -38,8 +41,8 @@ function App() {
         <Route path="/dashboard" element={<DashboardLayout/>}>
         <Route index element={<UserDashboard />} />
           <Route path="symptoms" element={<HealthAnalyzer />} />
-          <Route path="scan" element={<WoundScanner />} />
-          <Route path="voice" element={<VoiceAssistant />} />
+          <Route path="scan" element={<SymptomCheck />} />
+          <Route path="report" element={<Report />} />
           <Route path="appointments" element={<FindClinic />} />
           <Route path="help" element={<DoctorConnect />} />
           <Route path="sos" element={<AiSosAssistant />} />

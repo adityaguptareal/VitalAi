@@ -52,7 +52,7 @@ const Dashboard = () => {
     <div className="flex bg-background">
       <Sidebar />
       <main className="flex-1 p-4">
-        {/* <div className="flex justify-center items-center">Hello {userName || "user"}</div> */}
+        <div className="flex justify-center items-center">Hello {userName || "user"}</div>
         <Outlet />
       </main>
     </div>

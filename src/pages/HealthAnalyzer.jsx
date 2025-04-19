@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { Ban, Plus, ScanText } from "lucide-react";
-// import axios from 'axios';
 
 function HealthAnalyzer() {
   const [step, setStep] = useState(1);
