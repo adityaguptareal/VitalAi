@@ -16,25 +16,51 @@ const Signup = () => {
   // 🔹 Email Sign-Up
   const handleEmailSignup = async () => {
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
+    
+    try {
+      if (!email || !password) {
+        toast.error("Please provide both email and password");
+        setLoading(false);
+        return;
+      }
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+  
+      if (error) {
+        setLoading(false);
+        console.error("Signup Error:", error.message);
+        
+        // Handle rate limit error specifically
+        if (error.message.includes("rate limit") || error.message.includes("exceeded")) {
+          toast.error("Too many signup attempts. Please try again later.", { 
+            icon: "⏱️", 
+            duration: 5000 
+          });
+        } else {
+          toast.error("Signup failed: " + error.message, { 
+            icon: "⚠️", 
+            duration: 3000 
+          });
+        }
+        
+      } else {
+        setLoading(false);
+        toast.success("Signed up successfully");
+        toast("Please confirm your email", { icon: "📧", duration: 8000 });
+        setEmail("");
+        setPassword("");
+        navigate("/login");
+      }
+    } catch (err) {
       setLoading(false);
-      toast.error("Signed Up failed!" + error.message);
-      console.error("Signup Error:", error.message);
-      toast.error("Please try again !", { icon: "⚠️", duration: 2000 });
-      setEmail("");
-      setPassword("");
-    } else {
-      setLoading(false);
-      toast.success("Signed Up successfully");
-      toast("Please Confirm Your Email", { icon: "📧", duration: 8000 });
-      setEmail("");
-      setPassword("");
-      navigate("/login");
+      console.error("Unexpected error during signup:", err);
+      toast.error("Connection error. Please try again later.", {
+        icon: "🔌",
+        duration: 4000
+      });
     }
   };
 

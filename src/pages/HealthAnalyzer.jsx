@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import { Ban, Plus, ScanText } from "lucide-react";
+// import axios from 'axios';
 
 function HealthAnalyzer() {
   const [step, setStep] = useState(1);
@@ -40,6 +41,8 @@ function HealthAnalyzer() {
 
     // Show loading toast
     const toastId = toast.loading("Analyzing symptoms, please wait...");
+    
+    console.log("Sending symptoms to API:", selectedSymptoms.join(", "));
 
     try {
       const response = await fetch(
@@ -54,16 +57,23 @@ function HealthAnalyzer() {
         }
       );
 
+      console.log("API Response Status:", response.status);
+      
       if (!response.ok) {
+        console.error("Response not OK:", response.statusText);
         throw new Error(`HTTP Error: ${response.status}`);
       }
 
       const result = await response.json();
+      console.log("Raw API Response:", JSON.stringify(result, null, 2));
+      
       if (Array.isArray(result) && result.length > 0) {
+        console.log("Parsed Results:", result[0]);
         const sortedResults = result[0].sort((a, b) => b.score - a.score);
         setDiagnosis(sortedResults);
-        console.log(result);
+        console.log("Sorted Diagnosis Results:", sortedResults);
       } else {
+        console.log("Empty or invalid result format:", result);
         setDiagnosis([]);
       }
     } catch (error) {
