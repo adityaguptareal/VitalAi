@@ -67,7 +67,7 @@ const gettingUser=async()=>{
                 Welcome to {import.meta.env.VITE_APP_NAME ||"SwasthVani"}
               </h1>
               <p className="text-lg md:text-xl mb-6">
-                Seamless healthcare access, just a click away!
+                Seamless access, just a click away!
               </p>
               <button onClick={() => {
                 navigate("/about");
