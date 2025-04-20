@@ -3,6 +3,7 @@ import Tesseract from "tesseract.js";
 import * as pdfjsLib from "pdfjs-dist";
 import { GoogleGenAI } from "@google/genai";
 import { toast } from "react-hot-toast";
+import ReactMarkdown from "react-markdown";
 
 // PDF.js worker setup
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -104,7 +105,6 @@ Make sure the whole summary is short, focused, and helpful.
 
 Report:
 
-
 ${inputText}
                 `,
               },
@@ -176,8 +176,8 @@ ${inputText}
               {summary && (
                 <div className="mt-6">
                   <h3 className="text-lg font-medium text-green-800 mb-3">📝 Easy Summary:</h3>
-                  <div className="bg-green-50 border-l-4 border-green-400 rounded-md p-4 whitespace-pre-wrap text-gray-800 text-sm font-medium leading-relaxed">
-                    {summary}
+                  <div className="bg-green-50 border-l-4 border-green-400 rounded-md p-4 text-gray-800 text-sm font-medium leading-relaxed">
+                    <ReactMarkdown>{summary}</ReactMarkdown>
                   </div>
                 </div>
               )}

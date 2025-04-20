@@ -76,7 +76,7 @@ const Footer = () => {
             <div className="text-grey font-poppins text-sm flex flex-col justify-center items-center">
               <p className="mb-2 text-center">{`© ${new Date().getFullYear()} ${import.meta.env.VITE_APP_NAME ||"SwasthVani"}. All rights reserved.`}</p>
               <p className="flex items-center">
-                Design and Dweveloped by <span className="text-text-blue mx-1">Aditya Kumar</span> 
+                Design and Dweveloped by <span className="text-text-blue mx-1">Mixify Dev</span> 
               </p>
             </div>
           </div>
