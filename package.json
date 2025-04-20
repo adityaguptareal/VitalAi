@@ -13,6 +13,8 @@
     "@clerk/clerk-react": "^5.28.2",
     "@fontsource/montserrat": "^5.2.5",
     "@fontsource/poppins": "^5.2.5",
+    "@google/genai": "^0.9.0",
+    "@google/generative-ai": "^0.24.0",
     "@react-spring/web": "^9.7.5",
     "@supabase/supabase-js": "^2.49.3",
     "axios": "^1.8.4",

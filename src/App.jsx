@@ -22,6 +22,8 @@ import EmergencyContacts from "./pages/EmergencyContacts";
 import AppointmentsList from "./pages/AppointmentsList";
 import Report from "./pages/Report";
 import SymptomCheck from "./components/Symptomcheck";
+import Gamification from "./components/Gamification";
+// import './pdf-worker';
 
 
 function App() {
@@ -49,6 +51,7 @@ function App() {
           <Route path="sos" element={<AiSosAssistant />} />
           <Route path="contacts" element={<EmergencyContacts />} />
           <Route path="my" element={<AppointmentsList />} />
+          <Route path="game" element={<Gamification/>} />
         </Route>
         <Route path="*" element={<div>404</div>} />
         </Routes>

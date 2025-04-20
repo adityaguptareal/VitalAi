@@ -1,151 +1,190 @@
-import React, { useState } from 'react';
-import Tesseract from 'tesseract.js';
-import * as pdfjsLib from 'pdfjs-dist';
-import { Document, Page } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import React, { useState } from "react";
+import Tesseract from "tesseract.js";
+import * as pdfjsLib from "pdfjs-dist";
+import { GoogleGenAI } from "@google/genai";
+import { toast } from "react-hot-toast";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
+// PDF.js worker setup
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 const ReportScanner = () => {
-  const [file, setFile] = useState(null);
-  const [text, setText] = useState('');
+  const [summary, setSummary] = useState(""); // Will store simplified output
   const [loading, setLoading] = useState(false);
-  const [analysis, setAnalysis] = useState('');
+  const [file, setFile] = useState(null);
 
-  const handleFileChange = async (e) => {
-    const selectedFile = e.target.files[0];
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+
+  const handleFileUpload = (event) => {
+    const selectedFile = event.target.files[0];
     if (!selectedFile) return;
-
     setFile(selectedFile);
-    setText('');
-    setAnalysis('');
-    setLoading(true);
-
-    const fileType = selectedFile.type;
-
-    if (fileType === 'application/pdf') {
-      await handlePDF(selectedFile);
-    } else if (fileType.startsWith('image/')) {
-      await handleImage(selectedFile);
-    } else {
-      alert('Unsupported file type');
-    }
-
-    setLoading(false);
   };
 
-  const handlePDF = async (pdfFile) => {
-    const arrayBuffer = await pdfFile.arrayBuffer();
+  const processFile = async () => {
+    if (!file) {
+      toast.error("Please select a file first");
+      return;
+    }
+
+    setLoading(true);
+    setSummary("");
+
+    try {
+      let extractedText = "";
+
+      if (file.type === "application/pdf") {
+        extractedText = await extractTextFromPDF(file);
+      } else if (file.type.startsWith("image/")) {
+        extractedText = await extractTextFromImage(file);
+      } else {
+        toast.error("Please upload a PDF or image file.");
+        return;
+      }
+
+      await analyzeTextWithGemini(extractedText);
+    } catch (error) {
+      console.error("Error processing file:", error);
+      toast.error("Error processing file. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const extractTextFromImage = async (file) => {
+    const image = URL.createObjectURL(file);
+    const result = await Tesseract.recognize(image, "eng");
+    return result.data.text;
+  };
+
+  const extractTextFromPDF = async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-    let fullText = '';
+    let extracted = "";
 
-    for (let i = 0; i < pdf.numPages; i++) {
-      const page = await pdf.getPage(i + 1);
-      const content = await page.getTextContent();
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      const viewport = page.getViewport({ scale: 2 });
 
-      // If content is empty, fallback to OCR
-      if (content.items.length > 0) {
-        const pageText = content.items.map(item => item.str).join(' ');
-        fullText += pageText + '\n';
-      } else {
-        const canvas = document.createElement('canvas');
-        const viewport = page.getViewport({ scale: 2 });
-        const context = canvas.getContext('2d');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
 
-        await page.render({ canvasContext: context, viewport }).promise;
-
-        const imageData = canvas.toDataURL('image/png');
-        const ocrResult = await Tesseract.recognize(imageData, 'eng');
-        fullText += ocrResult.data.text + '\n';
-      }
+      await page.render({ canvasContext: context, viewport }).promise;
+      const dataUrl = canvas.toDataURL("image/png");
+      const result = await Tesseract.recognize(dataUrl, "eng");
+      extracted += result.data.text + "\n";
     }
 
-    setText(fullText);
-    analyzeReport(fullText);
+    return extracted;
   };
 
-  const handleImage = async (imgFile) => {
-    const imageData = URL.createObjectURL(imgFile);
-    const result = await Tesseract.recognize(imageData, 'eng');
-    setText(result.data.text);
-    analyzeReport(result.data.text);
-  };
-
-//   const analyzeReport = async (textContent) => {
-//     try {
-//       const res = await fetch('https://your-gemini-api-endpoint.com/analyze', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           'Authorization': `Bearer ${import.meta.env.VITE_GEMINI_API_KEY}`
-//         },
-//         body: JSON.stringify({
-//           prompt: `Explain this medical report in a way that a normal person can easily understand:\n\n${textContent}`
-//         })
-//       });
-
-//       const data = await res.json();
-//       setAnalysis(data?.summary || data?.result || 'No summary returned.');
-//     } catch (error) {
-//       console.error('Analysis error:', error);
-//       setAnalysis('Error analyzing the report.');
-//     }
-//   };
-const analyzeReport = async (textContent) => {
+  const analyzeTextWithGemini = async (inputText) => {
     try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            contents: [
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [
               {
-                parts: [
-                  {
-                    text: `Explain this medical report in simple, easy-to-understand terms for a non-medical person:\n\n${textContent}`,
-                  },
-                ],
+                text: `
+You are a friendly Indian medical assistant.
+
+Read the medical report below and give a very short summary in clear, simple English. Follow these rules:
+
+- Do **not** describe every line or test in the report.
+- Just tell the **main health issue(s)** found in the report.
+- Use **bullet points** with simple words so that any Indian person without medical knowledge can understand.
+- Explain any medical terms briefly if used.
+- Give **basic advice** on what the person should do next (like diet, lifestyle, or seeing a doctor).
+
+Make sure the whole summary is short, focused, and helpful.
+
+Report:
+
+
+${inputText}
+                `,
               },
             ],
-          }),
-        }
-      );
-  
-      const data = await res.json();
-      const result = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      setAnalysis(result || 'No summary returned.');
+          },
+        ],
+      });
+
+      const resultText = response.candidates[0].content.parts[0].text;
+      setSummary(resultText);
     } catch (error) {
-      console.error('Analysis error:', error);
-      setAnalysis('Error analyzing the report.');
+      console.error("Gemini API error:", error);
+      toast.error("Error analyzing with Gemini.");
     }
   };
-  
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">Upload Medical Report</h2>
-      <input type="file" accept=".pdf,image/*" onChange={handleFileChange} />
-      {loading && <p className="text-blue-600 mt-4">Processing file...</p>}
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white shadow sm:rounded-lg overflow-hidden">
+          <div className="px-4 py-5 sm:p-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Medical Report Simplifier</h2>
 
-      {text && (
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold">Extracted Text:</h3>
-          <pre className="bg-gray-100 p-2 rounded text-sm max-h-64 overflow-auto">{text}</pre>
-        </div>
-      )}
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload PDF or Image
+                </label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-colors duration-200">
+                  <div className="space-y-1 text-center">
+                    <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <div className="flex text-sm text-gray-600">
+                      <label className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                        <span>Upload a file</span>
+                        <input type="file" className="sr-only" accept="application/pdf,image/*" onChange={handleFileUpload} />
+                      </label>
+                      <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs text-gray-500">PDF or Image files only</p>
+                    {file && <p className="text-sm text-gray-600 mt-2">Selected: {file.name}</p>}
+                  </div>
+                </div>
+              </div>
 
-      {analysis && (
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold">Simplified Report:</h3>
-          <div className="bg-green-50 p-3 rounded border border-green-300">{analysis}</div>
+              <div className="flex justify-center">
+                <button
+                  onClick={processFile}
+                  disabled={!file || loading}
+                  className={`inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white ${
+                    loading || !file ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
+                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
+                >
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Processing...
+                    </>
+                  ) : (
+                    "Simplify Medical Report"
+                  )}
+                </button>
+              </div>
+
+              {summary && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium text-green-800 mb-3">📝 Easy Summary:</h3>
+                  <div className="bg-green-50 border-l-4 border-green-400 rounded-md p-4 whitespace-pre-wrap text-gray-800 text-sm font-medium leading-relaxed">
+                    {summary}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
