@@ -47,13 +47,13 @@ function App() {
           <Route path="reports" element={<Report />} />
           <Route path="appointments" element={<FindClinic />} />
           <Route path="reportScanner" element={<ReportScanner/>} />
-          <Route path="help" element={<DoctorConnect />} />
+          <Route path="game" element={<Gamification />} />
           <Route path="sos" element={<AiSosAssistant />} />
           <Route path="contacts" element={<EmergencyContacts />} />
           <Route path="my" element={<AppointmentsList />} />
           <Route path="game" element={<Gamification/>} />
         </Route>
-        <Route path="*" element={<div>404</div>} />
+        <Route path="*" element={<Error />} />
         </Routes>
       </BrowserRouter>
       <Toaster />

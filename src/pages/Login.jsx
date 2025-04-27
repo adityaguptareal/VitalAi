@@ -17,7 +17,7 @@ const gettingUser=async()=>{
   const {data:{user}}=await supabase.auth.getUser();
   if(user){
     navigate('/dashboard');
-    r;
+    ;
   }else{
     return
   }

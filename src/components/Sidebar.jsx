@@ -18,6 +18,7 @@ import {
   AlertCircle,
   PhoneCall,
   ClipboardMinus,
+  Gamepad2,
 } from "lucide-react"; // Icons
 import { useLocation } from "react-router-dom";
 import supabase from "../supabaseClient";
@@ -33,7 +34,7 @@ const Sidebar = () => {
     { name: "Health Analyzer", icon: <Activity />, path: "/dashboard/symptoms" },
     { name: "Wound Scanner", icon: <Camera />, path: "/dashboard/scan" },
     { name: "Report Analyzer", icon: <ClipboardMinus />, path: "/dashboard/reportScanner" },
-    { name: "Find a Clinic", icon: <MapPin />, path: "/dashboard/appointments" },
+    { name: "Gamification", icon: <Gamepad2 />, path: "/dashboard/game" },
     { name: "Doctor Connect", icon: <Video />, path: "/dashboard/help" },
     { name: "AI SOS Assistant", icon: <AlertCircle />, path: "/dashboard/sos" },
     { name: "Emergency Contacts", icon: <PhoneCall />, path: "/dashboard/contacts" }
